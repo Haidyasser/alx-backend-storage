@@ -1,2 +1,3 @@
 // FileName: 2-insert
-db.school.insert({name: "Holberton School"});
+db.school.insert({
+    name: "Holberton School"});
