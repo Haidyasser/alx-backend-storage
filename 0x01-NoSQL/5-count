@@ -1,0 +1,2 @@
+// Filename: 5-count.js
+db.school.count()
