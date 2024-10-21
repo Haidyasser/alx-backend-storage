@@ -1,3 +1,2 @@
 // Filename: 3-all
-use school
-db.movies.find().forEach(printjson)
+db.school.find().forEach(printjson)
