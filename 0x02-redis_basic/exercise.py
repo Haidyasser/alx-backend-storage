@@ -5,6 +5,7 @@ import uuid
 from typing import Union, Optional, Callable
 from functools import wraps
 
+
 def call_history(method: Callable) -> Callable:
     """ Decorator to log inputs and outputs of a method """
     @wraps(method)
@@ -12,19 +13,19 @@ def call_history(method: Callable) -> Callable:
         # Create keys for inputs and outputs
         input_key = f"{method.__qualname__}:inputs"
         output_key = f"{method.__qualname__}:outputs"
-        
+
         # Normalize args as strings and push to the inputs list
         self._redis.rpush(input_key, str(args))
-        
+
         # Call the original method and get the output
         output = method(self, *args, **kwargs)
-        
+
         # Push the output to the outputs list
         self._redis.rpush(output_key, str(output))
-        
+
         return output
-    
     return wrapper
+
 
 def count_calls(method: Callable) -> Callable:
     """ Decorator to count the number of calls to a method """
@@ -50,7 +51,7 @@ class Cache:
     @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """ Store data in Redis """
-        key = f"data:{uuid.uuid4()}"
+        key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
 
@@ -72,3 +73,22 @@ class Cache:
     def get_int(self, key: str) -> Optional[int]:
         """ Get int from bytes """
         return self.get(key, fn=lambda d: int(d))
+
+
+def replay(fn: Callable) -> None:
+    """ Display the history of calls to a function """
+    input_key = f"{fn.__qualname__}:inputs"
+    output_key = f"{fn.__qualname__}:outputs"
+
+    # Retrieve inputs and outputs from Redis
+    redis_instance = redis.Redis()
+    inputs = redis_instance.lrange(input_key, 0, -1)
+    outputs = redis_instance.lrange(output_key, 0, -1)
+
+    # Count the number of calls
+    call_count = len(inputs)
+
+    # Display the history
+    print(f"{fn.__qualname__} was called {call_count} times:")
+    for inp, out in zip(inputs, outputs):
+        print(f"{fn.__qualname__}(*{eval(inp.decode())}) -> {out.decode()}")
