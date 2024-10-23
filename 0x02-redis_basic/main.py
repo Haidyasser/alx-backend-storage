@@ -5,10 +5,15 @@ Cache = __import__('exercise').Cache
 
 cache = Cache()
 
-cache.store(b"first")
+s1 = cache.store("first")
+print(s1)
+s2 = cache.store("secont")
+print(s2)
+s3 = cache.store("third")
+print(s3)
 
-print(cache.get(cache.store.__qualname__))  # Should print b"first"
+inputs = cache._redis.lrange("{}:inputs".format(cache.store.__qualname__), 0, -1)
+outputs = cache._redis.lrange("{}:outputs".format(cache.store.__qualname__), 0, -1)
 
-cache.store(b"second")
-cache.store(b"third")
-print(cache.get(cache.store.__qualname__))  # Should print b"third"
+print("inputs: {}".format(inputs))
+print("outputs: {}".format(outputs))
