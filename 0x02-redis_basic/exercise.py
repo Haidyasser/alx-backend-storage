@@ -8,6 +8,7 @@ from functools import wraps
 
 class Cache:
     """ Cache class """
+
     def __init__(self):
         """ Constructor """
         self._redis = redis.Redis()
@@ -31,8 +32,9 @@ class Cache:
         return key
 
     @count_calls
-    def get(self, key: str, fn: callable = None) -> Optional[Union[str, bytes, int, float]]:
-        """ get data from Redis """
+    def get(self, key: str, fn: callable = None
+            ) -> Optional[Union[str, bytes, int, float]]:
+        """ Get data from Redis """
         data = self._redis.get(key)
         if data is None:
             return None
@@ -40,10 +42,10 @@ class Cache:
 
     @count_calls
     def get_str(self, key: str) -> Optional[str]:
-        """ get string from bytes """
+        """ Get string from bytes """
         return self.get(key, fn=lambda d: d.decode('utf-8'))
 
     @count_calls
     def get_int(self, key: str) -> Optional[int]:
-        """ get int from bytes """
+        """ Get int from bytes """
         return self.get(key, fn=lambda d: int(d))
