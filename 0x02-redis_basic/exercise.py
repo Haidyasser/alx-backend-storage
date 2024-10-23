@@ -12,7 +12,6 @@ def count_calls(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """ Wrapper function """
-        # Increment the call count in Redis using the fully qualified name of the method
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
 
@@ -35,7 +34,8 @@ class Cache:
         return key
 
     @count_calls
-    def get(self, key: str, fn: Callable = None) -> Optional[Union[str, bytes, int, float]]:
+    def get(self, key: str, fn: Callable = None
+            ) -> Optional[Union[str, bytes, int, float]]:
         """ Get data from Redis """
         data = self._redis.get(key)
         if data is None:
