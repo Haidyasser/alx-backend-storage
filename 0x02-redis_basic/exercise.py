@@ -2,8 +2,21 @@
 """ Redis basic exercise """
 import redis
 import uuid
-from typing import Union, Optional
+from typing import Union, Optional, Callable
 from functools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    """ Decorator to count the number of calls to a method """
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """ Wrapper function """
+        # Increment the call count in Redis using the fully qualified name of the method
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Cache:
@@ -12,17 +25,7 @@ class Cache:
     def __init__(self):
         """ Constructor """
         self._redis = redis.Redis()
-        self._redis.flushdb()
-        self.call_count = {}
-
-    def count_calls(self, fn: callable) -> callable:
-        """ Decorator to count calls to a method """
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            name = fn.__name__
-            self.call_count[name] = self.call_count.get(name, 0) + 1
-            return fn(*args, **kwargs)
-        return wrapper
+        self._redis.flushdb()  # Clear the database for a fresh start
 
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
@@ -32,8 +35,7 @@ class Cache:
         return key
 
     @count_calls
-    def get(self, key: str, fn: callable = None
-            ) -> Optional[Union[str, bytes, int, float]]:
+    def get(self, key: str, fn: Callable = None) -> Optional[Union[str, bytes, int, float]]:
         """ Get data from Redis """
         data = self._redis.get(key)
         if data is None:
